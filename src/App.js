@@ -49,7 +49,7 @@ const App = () => {
     //   } else {
     //     outData.push(val);
     //   }
-    // }
+
     for (let val of customerData) {
       if (vcObjectData[val[1]]) {
         inData.push(val);
