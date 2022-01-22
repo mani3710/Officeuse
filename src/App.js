@@ -5,6 +5,9 @@ import CSVReader from "react-csv-reader";
 import { CSVLink, CSVDownload } from "react-csv";
 var mvcM = [];
 const App = () => {
+
+
+
   const [mvcData, setMvcData] = useState([]);
   const [vcDataDownload, setVcDataDownload] = useState([]);
   const [customerData, setCustomerData] = useState([]);
@@ -38,9 +41,7 @@ const App = () => {
   const splitData = () => {
     let inData = [];
     let outData = [];
-    // for (let i = 0; i < 20; i++) {
-    //   console.log(customerData[i])
-    // }
+
 
     // for (let vc of mvcData) {
     //   if (val[1] == vc[0]) {
