@@ -22,7 +22,7 @@ const App = () => {
     console.log(e.length);
     for (let i = 0; i < e.length; i++) {
       MVCCModData.push([`10001000${e[i][0]}`]);
-      objectData[`10001000${e[i][0]}`] = 1;
+      objectData[`'10001000${e[i][0]}`] = 1;
       download.push([`'10001000${e[i][0]}`]);
     }
     setMvcData(MVCCModData);
@@ -33,8 +33,13 @@ const App = () => {
 
   const handleCSVCustomer = e => {
     let customerDataset = [];
-    customerDataset = e;
-    customerDataset.shift();
+    // customerDataset = e;
+    // customerDataset.shift();
+    for (let i = 1; i < e.length; i++) {
+      customerDataset[i - 1] = e[i];
+      customerDataset[i - 1][0] = `'${e[i][0]}`
+      customerDataset[i - 1][1] = `'${e[i][1]}`
+    }
     setCustomerData(customerDataset);
     console.log(customerDataset);
   }
