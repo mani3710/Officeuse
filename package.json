@@ -8,10 +8,10 @@
     "@testing-library/user-event": "12.1.10",
     "react": "17.0.1",
     "react-csv": "2.0.3",
-    "react-csv-reader": "1.2.2",
+    "react-csv-reader": "^3.5.2",
     "react-dom": "17.0.1",
-    "react-scripts": "4.0.3",
-    "read-excel-file": "5.0.0",
+    "react-scripts": "^5.0.1",
+    "read-excel-file": "^5.5.3",
     "web-vitals": "1.0.1"
   },
   "scripts": {
