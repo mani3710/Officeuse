@@ -40,9 +40,5 @@
   },
   "devDependencies": {
     "gh-pages": "^3.2.3"
-  },
-  "engines": {
-    "node": "18.12.1",
-    "npm": "8.19.2"
   }
 }
