@@ -88,10 +88,10 @@ const App = () => {
       newData[compressDataSource[i][5]] =  compressDataSource[i][6];
       rowData.push({...compressDataSource[i]});
     }else{
-      newData[compressDataSource[i][5]] = newData[compressDataSource[i][5]]+ ", "+compressDataSource[i][6];
+      newData[compressDataSource[i][5]] = newData[compressDataSource[i][5]]+ ","+compressDataSource[i][6];
     }
   }
-  
+        
   let newArray =[["ALA","ProductName","ProductSKU","BasePrice","CAS","Product_CAS_ID","Channelname","Type"]];
  
   for(const obj of rowData){
