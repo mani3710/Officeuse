@@ -1,6 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
-import React, { useState } from 'react';
+import React, { startTransition, useState } from 'react';
 import CSVReader from "react-csv-reader";
 import { CSVLink, CSVDownload } from "react-csv";
 var mvcM = [];
@@ -19,6 +19,9 @@ const App = () => {
   const [compareData, setCompareData] = useState([]);
   const [updatedData, setUpdatedData] = useState([]);
   const [isDone, setIsDone] = useState(false);
+  const [compressDataSource, setCompressDataSource] = useState([]);
+  const [compressDataSourceResult, setCompressDataSourceResult] = useState([]);
+  const [compressionStarted, setCompressionStarted] = useState(false);
   const handleCSVFileUpload = e => {
     setIsDone(false);
 
@@ -56,6 +59,49 @@ const App = () => {
     setIsDone(true);
 
   }
+
+  const handleForCompress = e => {
+    setIsDone(false);
+
+    // let sourceObj = {};
+    // for (let i = 1; i < e.length; i++) {
+    //   // MVCCModData.push([`10001000${e[i][0]}`]);
+    //   // objectData[`'10001000${e[i][0]}`] = 1;
+    //   // download.push([`'10001000${e[i][0]}`]);
+
+    //   sourceObj[e[i][1]] = e[i][0];
+
+    // }
+    e.shift()
+    setCompressDataSource(e);
+    
+   
+  }
+  const handleCompression =() => {
+    setCompressionStarted(true);
+  // console.log("compareData",compressDataSource)
+  let newData = {};
+  let rowData = [];
+  for (let i = 0; i < compressDataSource.length; i++) {
+ 
+    if(!newData.hasOwnProperty(compressDataSource[i][5])){
+      newData[compressDataSource[i][5]] =  compressDataSource[i][6];
+      rowData.push({...compressDataSource[i]});
+    }else{
+      newData[compressDataSource[i][5]] = newData[compressDataSource[i][5]]+ ", "+compressDataSource[i][6];
+    }
+  }
+  
+  let newArray =[["ALA","ProductName","ProductSKU","BasePrice","CAS","Product_CAS_ID","Channelname","Type"]];
+ 
+  for(const obj of rowData){
+   newArray.push([obj[0],obj[1],obj[2],obj[3],obj[4],obj[5],newData[obj[5]],obj[7]]);
+  }
+  console.log("new",newArray)
+   setCompressDataSourceResult(newArray);
+   setCompressionStarted(false);
+  }
+
   return (
     <div>
 
@@ -101,6 +147,39 @@ const App = () => {
           Download in customer data
 </button>
       </CSVLink>
+<label style={{ marginLeft: 20 }}> --------------</label>
+<br></br>
+<label style={{ marginLeft: 20 }}>Combine</label>
+<br></br>
+<label>Source file</label>
+      <CSVReader
+
+        style={{ border: "2px solid #ececec", padding: 5, }}
+        cssClass="react-csv-input"
+        onFileLoaded={e => { handleForCompress(e) }}
+      />
+
+<br></br>
+      <button onClick={() => { handleCompression() }} 
+      style={{ background: compressionStarted ? "red" :"green" }}
+      >
+        Compress
+</button>
+<br></br>
+<br></br>
+<CSVLink
+
+        // headers={[{ label: "MVCC", key: "MVCC" }]}
+        filename={`Compress file ${new Date().toLocaleString()}.csv`}
+        data={compressDataSourceResult} style={{ display: "block" }}>
+        <button >
+          Download file
+</button>
+      </CSVLink>
+
+      
+
+
 
       {/* <br></br>
       <CSVLink
