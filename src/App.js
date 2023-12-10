@@ -22,6 +22,11 @@ const App = () => {
   const [compressDataSource, setCompressDataSource] = useState([]);
   const [compressDataSourceResult, setCompressDataSourceResult] = useState([]);
   const [compressionStarted, setCompressionStarted] = useState(false);
+
+  //split LCO
+  const [splitedLco, setSplitedLco] = useState({});
+  const [splitLcoSource,setSplitLcoSource] = useState([]);
+  const [headerSplitLco,setHeaderSplitLco] = useState([]);
   const handleCSVFileUpload = e => {
     setIsDone(false);
 
@@ -74,32 +79,84 @@ const App = () => {
     // }
     e.shift()
     setCompressDataSource(e);
-    
-   
+
+
   }
-  const handleCompression =() => {
+  const handleCompression = () => {
     setCompressionStarted(true);
-  // console.log("compareData",compressDataSource)
-  let newData = {};
-  let rowData = [];
-  for (let i = 0; i < compressDataSource.length; i++) {
- 
-    if(!newData.hasOwnProperty(compressDataSource[i][5])){
-      newData[compressDataSource[i][5]] =  compressDataSource[i][6];
-      rowData.push({...compressDataSource[i]});
-    }else{
-      newData[compressDataSource[i][5]] = newData[compressDataSource[i][5]]+ ","+compressDataSource[i][6];
+    // console.log("compareData",compressDataSource)
+    let newData = {};
+    let rowData = [];
+    for (let i = 0; i < compressDataSource.length; i++) {
+
+      if (!newData.hasOwnProperty(compressDataSource[i][5])) {
+        newData[compressDataSource[i][5]] = compressDataSource[i][6];
+        rowData.push({ ...compressDataSource[i] });
+      } else {
+        newData[compressDataSource[i][5]] = newData[compressDataSource[i][5]] + "," + compressDataSource[i][6];
+      }
     }
+
+    let newArray = [["ALA", "ProductName", "ProductSKU", "BasePrice", "CAS", "Product_CAS_ID", "Channelname", "Type"]];
+
+    for (const obj of rowData) {
+      newArray.push([obj[0], obj[1], obj[2], obj[3], obj[4], obj[5], newData[obj[5]], obj[7]]);
+    }
+    console.log("new", newArray)
+    setCompressDataSourceResult(newArray);
+    setCompressionStarted(false);
   }
-        
-  let newArray =[["ALA","ProductName","ProductSKU","BasePrice","CAS","Product_CAS_ID","Channelname","Type"]];
- 
-  for(const obj of rowData){
-   newArray.push([obj[0],obj[1],obj[2],obj[3],obj[4],obj[5],newData[obj[5]],obj[7]]);
+
+  const handleCSVForSplitLCO= e => {
+    var arrayOfData = [];
+    console.log("csv", e);
+    let len = e.length;
+    let lenOfRow = e[0].length
+    console.log("len",len,lenOfRow);
+    for(let m=1;m<len;m++){
+      let data ={};
+      for(let k=0;k<lenOfRow;k++){
+        data[e[0][k]] = e[m][k];
+      }
+      arrayOfData.push(data);
+    }
+    console.log("object",arrayOfData);
+    // this.setState({dataList:arrayOfData,headerArray:e[0]});
+    setSplitLcoSource(arrayOfData);
+    setHeaderSplitLco(e[0]);
   }
-  console.log("new",newArray)
-   setCompressDataSourceResult(newArray);
-   setCompressionStarted(false);
+
+  const splitByLcoCode = () => {
+    var dataList = splitLcoSource;
+    console.log("data", dataList);
+    let lcoList = {};
+    let lcoArray = [];
+    let len = dataList.length;
+    for (let j = 1; j < len; j++) {
+      let keyOf = dataList[j].lcocode;
+      if (keyOf in lcoList) {
+        lcoList[keyOf].push(dataList[j]);
+      } else {
+        lcoList[keyOf] = [];
+        lcoList[keyOf].push(dataList[j]);
+
+      }
+    }
+    console.log(lcoList);
+    setSplitedLco(lcoList);
+
+    // for (let h of this.state.dataList) {
+    //   let keyOf = h[1];
+    //   if (keyOf in lcoList) {
+    //     lcoList[keyOf].push(h);
+    //   } else {
+    //     lcoList[keyOf] = [];
+    //     lcoList[keyOf].push(h);
+
+    //   }
+    // }
+    // console.log("lcolist", lcoList);
+    // this.setState({ splitedData: lcoList });
   }
 
   return (
@@ -134,7 +191,7 @@ const App = () => {
       <br></br>
       <button onClick={() => { splitData() }} style={{ background: "green" }}>
         Change
-</button>
+      </button>
       <label style={{ marginLeft: 20 }}> {isDone ? "Update!" : ""}</label>
       <br></br>
       <br></br>
@@ -145,13 +202,13 @@ const App = () => {
         data={updatedData} style={{ display: "block" }}>
         <button>
           Download in customer data
-</button>
+        </button>
       </CSVLink>
-<label style={{ marginLeft: 20 }}> --------------</label>
-<br></br>
-<label style={{ marginLeft: 20 }}>Combine</label>
-<br></br>
-<label>Source file</label>
+      <label style={{ marginLeft: 20 }}> --------------</label>
+      <br></br>
+      <label style={{ marginLeft: 20 }}>Combine</label>
+      <br></br>
+      <label>Source file</label>
       <CSVReader
 
         style={{ border: "2px solid #ececec", padding: 5, }}
@@ -159,25 +216,25 @@ const App = () => {
         onFileLoaded={e => { handleForCompress(e) }}
       />
 
-<br></br>
-      <button onClick={() => { handleCompression() }} 
-      style={{ background: compressionStarted ? "red" :"green" }}
+      <br></br>
+      <button onClick={() => { handleCompression() }}
+        style={{ background: compressionStarted ? "red" : "green" }}
       >
         Compress
-</button>
-<br></br>
-<br></br>
-<CSVLink
+      </button>
+      <br></br>
+      <br></br>
+      <CSVLink
 
         // headers={[{ label: "MVCC", key: "MVCC" }]}
         filename={`Compress file ${new Date().toLocaleString()}.csv`}
         data={compressDataSourceResult} style={{ display: "block" }}>
         <button >
           Download file
-</button>
+        </button>
       </CSVLink>
 
-      
+
 
 
 
@@ -191,12 +248,56 @@ const App = () => {
           Download Out customer data
 </button>
       </CSVLink> */}
+      <br></br>
+      <br></br>
+      <label>--------------------------------------------------</label>
+      <br></br>
+      <br></br>
 
+      <label>Split File by LCO</label>
+      <br></br>
+      <br></br>
+      <label>Source file</label>
+      <CSVReader
+
+        style={{ border: "2px solid #ececec", padding: 5, }}
+        cssClass="react-csv-input"
+        onFileLoaded={e => { handleCSVForSplitLCO(e) }}
+      />
+      <br></br>
+      <button onClick={() => { splitByLcoCode() }}>
+      Split Now
+      </button>
+
+      <div
+          style={{ width: "100%", height: "80%", overflow: "auto" }}
+        >
+          {Object.keys(splitedLco).map((visit, index) => <div style={{ marginTop: 10, width: "40%", borderBottomColor: "gray", borderBottomWidth: 2 }}>
+
+            <CSVLink
+
+              headers={headerSplitLco}
+              filename={`lco(${visit}).csv`}
+              data={splitedLco[visit]} style={{ display: "block" }}>
+              <button>
+                {index}.)  Lco {visit}
+              </button>
+            </CSVLink>
+          </div>)}
+          </div>
+          <br></br>
+      <br></br>
+      <br></br>
+      <br></br>
     </div>
 
   );
 }
 export default App;
+
+
+
+
 // class App extends React.Component {
 //   constructor(props) {
 //     super(props);
@@ -208,36 +309,36 @@ export default App;
 //     }
 //   }
 //   handleCSVFileUpload = e => {
-//     let header = [];
-//     // delete e[0]
-//     let MVCCModData = []
-//     console.log(e.length);
-//     for (let i = 0; i < e.length; i++) {
-//       MVCCModData[i] = e[i][0];
-//     }
-//     // for (let i in e) {
-
+//     // let header = [];
+//     // // delete e[0]
+//     // let MVCCModData = []
+//     // console.log(e.length);
+//     // for (let i = 0; i < e.length; i++) {
 //     //   MVCCModData[i] = e[i][0];
 //     // }
-//     mvcM = MVCCModData;
-//     // this.setState({ MVCCMod: MVCCModData });
+//     // // for (let i in e) {
+
+//     // //   MVCCModData[i] = e[i][0];
+//     // // }
+//     // mvcM = MVCCModData;
+//     // // this.setState({ MVCCMod: MVCCModData });
 
 
 
-//     // var arrayOfData = [];
-//     // console.log("csv", e);
-//     // let len = e.length;
-//     // let lenOfRow = e[0].length
-//     // console.log("len",len,lenOfRow);
-//     // for(let m=1;m<len;m++){
-//     //   let data ={};
-//     //   for(let k=0;k<lenOfRow;k++){
-//     //     data[e[0][k]] = e[m][k];
-//     //   }
-//     //   arrayOfData.push(data);
-//     // }
-//     // console.log("object",arrayOfData);
-//     // this.setState({dataList:arrayOfData,headerArray:e[0]});
+//     var arrayOfData = [];
+//     console.log("csv", e);
+//     let len = e.length;
+//     let lenOfRow = e[0].length
+//     console.log("len",len,lenOfRow);
+//     for(let m=1;m<len;m++){
+//       let data ={};
+//       for(let k=0;k<lenOfRow;k++){
+//         data[e[0][k]] = e[m][k];
+//       }
+//       arrayOfData.push(data);
+//     }
+//     console.log("object",arrayOfData);
+//     this.setState({dataList:arrayOfData,headerArray:e[0]});
 //   }
 
 //   exportMVCWithCode = () => {
@@ -245,29 +346,30 @@ export default App;
 //   }
 //   splitByLcoCode() {
 //     var { dataList } = this.state;
+//     console.log("data",dataList);
 //     let lcoList = {};
 //     let lcoArray = [];
-//     //  let len = dataList.length;
-//     //  for(let j =1;j<len;j++){
-//     //   let keyOf = dataList[j][1];
-//     //   if (keyOf in lcoList){
-//     //     lcoList[keyOf].push(dataList[j]);
-//     //   }else{
-//     //     lcoList[keyOf] = [];
-//     //     lcoList[keyOf].push(dataList[j]);
-
-//     //   }
-//     //  }
-//     for (let h of this.state.dataList) {
-//       let keyOf = h[1];
-//       if (keyOf in lcoList) {
-//         lcoList[keyOf].push(h);
-//       } else {
+//      let len = dataList.length;
+//      for(let j =1;j<len;j++){
+//       let keyOf = dataList[j][1];
+//       if (keyOf in lcoList){
+//         lcoList[keyOf].push(dataList[j]);
+//       }else{
 //         lcoList[keyOf] = [];
-//         lcoList[keyOf].push(h);
+//         lcoList[keyOf].push(dataList[j]);
 
 //       }
-//     }
+//      }
+//     // for (let h of this.state.dataList) {
+//     //   let keyOf = h[1];
+//     //   if (keyOf in lcoList) {
+//     //     lcoList[keyOf].push(h);
+//     //   } else {
+//     //     lcoList[keyOf] = [];
+//     //     lcoList[keyOf].push(h);
+
+//     //   }
+//     // }
 //     console.log("lcolist", lcoList);
 //     this.setState({ splitedData: lcoList });
 //   }
@@ -291,17 +393,17 @@ export default App;
 //             Download MVC
 // </button>
 //         </CSVLink>
-//         {/* <button
+//         <button
 //           onClick={() => { this.splitByLcoCode() }}
 //         >
 //           split by lco
-// </button> */}
+// </button>
 //         <div
 //           style={{ width: "100%", height: "80%", overflow: "auto" }}
 //         >
 //           {Object.keys(this.state.splitedData).map((visit, index) => <div style={{ marginTop: 10, width: "40%", borderBottomColor: "gray", borderBottomWidth: 2 }}>
 
-//             {/* <CSVLink
+//             <CSVLink
 
 //               headers={this.state.headerArray}
 //               filename={`lco(${visit}).csv`}
@@ -309,7 +411,7 @@ export default App;
 //               <button>
 //                 {index}.)  Lco {visit}
 //               </button>
-//             </CSVLink> */}
+//             </CSVLink>
 //           </div>)}
 //         </div>
 
